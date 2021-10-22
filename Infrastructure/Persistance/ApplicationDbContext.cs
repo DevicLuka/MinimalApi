@@ -7,7 +7,6 @@ namespace Infrastructure.Persistance
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
-
         }
 
         public DbSet<Car> Cars { get; set; }
