@@ -1,6 +1,8 @@
 ﻿using Domain.Entities;
+using Infrastructure.Persistance;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace WebUI.Features.Motorbikes
 {
@@ -8,25 +10,17 @@ namespace WebUI.Features.Motorbikes
     [ApiController]
     public class MotorbikesController : ControllerBase
     {
+        private readonly ApplicationDbContext _context;
+
+        public MotorbikesController(ApplicationDbContext context)
+        {
+            _context = context;
+        }
+
         [HttpGet]
         public ActionResult<List<Motorbike>> GetMotorbikes()
         {
-            var motorbikes = new List<Motorbike>();
-            var motorbike1 = new Motorbike
-            {
-                TeamName = "Team A",
-                Speed = 100,
-                MelfunctionChance = 0.2
-            };
-            var motorbike2 = new Motorbike
-            {
-                TeamName = "Team B",
-                Speed = 90,
-                MelfunctionChance = 0.15
-            };
-            motorbikes.Add(motorbike1);
-            motorbikes.Add(motorbike2);
-
+            var motorbikes = _context.Motorbikes.ToList();
             return Ok(motorbikes);
         }
 
@@ -34,14 +28,14 @@ namespace WebUI.Features.Motorbikes
         [Route("{id}")]
         public ActionResult<Motorbike> GetMotorbike(int id)
         {
-            var motorbike1 = new Motorbike
-            {
-                TeamName = "Team A",
-                Speed = 100,
-                MelfunctionChance = 0.2
-            };
+            var dbMotorbike = _context.Motorbikes.FirstOrDefault(x => x.Id == id);
 
-            return Ok(motorbike1);
+            if (dbMotorbike == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(dbMotorbike);
         }
 
         [HttpPost]
@@ -49,12 +43,12 @@ namespace WebUI.Features.Motorbikes
         {
             var newMotorbike = new Motorbike
             {
-                Id = motorbike.Id,
                 TeamName = motorbike.TeamName,
                 Speed = motorbike.Speed,
                 MelfunctionChance = motorbike.MelfunctionChance
             };
-
+            _context.Motorbikes.Add(motorbike);
+            _context.SaveChanges();
             return Ok(newMotorbike);
         }
 
@@ -62,22 +56,33 @@ namespace WebUI.Features.Motorbikes
         [Route("{id}")]
         public ActionResult<Motorbike> UpdateMotorbike(Motorbike motorbike)
         {
-            var updateMotorbike = new Motorbike
-            {
-                Id = motorbike.Id,
-                TeamName = motorbike.TeamName,
-                Speed = motorbike.Speed,
-                MelfunctionChance = motorbike.MelfunctionChance
-            };
+            var dbMotorbike = _context.Motorbikes.FirstOrDefault(x => x.Id == motorbike.Id);
 
-            return Ok(updateMotorbike);
+            if (dbMotorbike == null)
+            {
+                return NotFound($"Motorbike with id: {motorbike.Id} isn't found.");
+            }
+
+            dbMotorbike.TeamName = motorbike.TeamName;
+            dbMotorbike.Speed = motorbike.Speed;
+            dbMotorbike.MelfunctionChance = motorbike.MelfunctionChance;
+            _context.SaveChanges();
+
+            return Ok(dbMotorbike);
         }
 
         [HttpDelete]
         [Route("{id}")]
         public ActionResult DeleteCar(int id)
         {
-            return Ok($"Motorbike with id {id} was succesfuly deleted");
+            var dbMotorbike = _context.Motorbikes.FirstOrDefault(x => x.Id == id);
+            if (dbMotorbike == null)
+            {
+                return NotFound($"Motorbike with id: {id} isn't found.");
+            }
+            _context.Remove(dbMotorbike);
+            _context.SaveChanges();
+            return Ok($"Motorbike with id: {id} was successfuly deleted");
         }
     }
 }
