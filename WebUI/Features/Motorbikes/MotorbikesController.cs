@@ -3,6 +3,7 @@ using Infrastructure.Persistance;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Linq;
+using WebUI.Features.Motorbikes.Models;
 
 namespace WebUI.Features.Motorbikes
 {
@@ -39,33 +40,33 @@ namespace WebUI.Features.Motorbikes
         }
 
         [HttpPost]
-        public ActionResult<Motorbike> CreateMotorbike(Motorbike motorbike)
+        public ActionResult<Motorbike> CreateMotorbike(MotorbikeCreateModel motorbikeModel)
         {
             var newMotorbike = new Motorbike
             {
-                TeamName = motorbike.TeamName,
-                Speed = motorbike.Speed,
-                MelfunctionChance = motorbike.MelfunctionChance
+                TeamName = motorbikeModel.TeamName,
+                Speed = motorbikeModel.Speed,
+                MelfunctionChance = motorbikeModel.MelfunctionChance
             };
-            _context.Motorbikes.Add(motorbike);
+            _context.Motorbikes.Add(newMotorbike);
             _context.SaveChanges();
             return Ok(newMotorbike);
         }
 
         [HttpPut]
         [Route("{id}")]
-        public ActionResult<Motorbike> UpdateMotorbike(Motorbike motorbike)
+        public ActionResult<Motorbike> UpdateMotorbike(MotorbikeUpdateModel motorbikeModel)
         {
-            var dbMotorbike = _context.Motorbikes.FirstOrDefault(x => x.Id == motorbike.Id);
+            var dbMotorbike = _context.Motorbikes.FirstOrDefault(x => x.Id == motorbikeModel.Id);
 
             if (dbMotorbike == null)
             {
-                return NotFound($"Motorbike with id: {motorbike.Id} isn't found.");
+                return NotFound($"Motorbike with id: {motorbikeModel.Id} isn't found.");
             }
 
-            dbMotorbike.TeamName = motorbike.TeamName;
-            dbMotorbike.Speed = motorbike.Speed;
-            dbMotorbike.MelfunctionChance = motorbike.MelfunctionChance;
+            dbMotorbike.TeamName = motorbikeModel.TeamName;
+            dbMotorbike.Speed = motorbikeModel.Speed;
+            dbMotorbike.MelfunctionChance = motorbikeModel.MelfunctionChance;
             _context.SaveChanges();
 
             return Ok(dbMotorbike);
