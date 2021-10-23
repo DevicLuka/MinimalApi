@@ -52,7 +52,7 @@ namespace WebUI.Features.Cars
             _context.Cars.Add(car);
             _context.SaveChanges();
 
-            return Ok(carModel);
+            return Ok(car);
         }
 
         [HttpPut]
