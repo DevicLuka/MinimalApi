@@ -3,6 +3,7 @@ using Infrastructure.Persistance;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Linq;
+using WebUI.Features.Cars.Models;
 
 namespace WebUI.Features.Cars
 {
@@ -39,28 +40,35 @@ namespace WebUI.Features.Cars
         }
 
         [HttpPost]
-        public ActionResult<Car> CreateCar(Car car)
+        public ActionResult<Car> CreateCar(CarCreateModel carModel)
         {
+            var car = new Car
+            {
+                TeamName = carModel.TeamName,
+                Speed = carModel.Speed,
+                MelfunctionChance = carModel.MelfunctionChance
+            };
+
             _context.Cars.Add(car);
             _context.SaveChanges();
 
-            return Ok(car);
+            return Ok(carModel);
         }
 
         [HttpPut]
         [Route("{id}")]
-        public ActionResult<Car> UpdateCar(Car car)
+        public ActionResult<Car> UpdateCar(CarUpdateModel carModel)
         {
-            var dbCar = _context.Cars.FirstOrDefault(x => x.Id == car.Id);
+            var dbCar = _context.Cars.FirstOrDefault(x => x.Id == carModel.Id);
 
             if (dbCar == null)
             {
-                return NotFound($"Car with id:{car.Id} isn't found");
+                return NotFound($"Car with id:{carModel.Id} isn't found");
             }
 
-            dbCar.TeamName = car.TeamName;
-            dbCar.Speed = car.Speed;
-            dbCar.MelfunctionChance = car.MelfunctionChance;
+            dbCar.TeamName = carModel.TeamName;
+            dbCar.Speed = carModel.Speed;
+            dbCar.MelfunctionChance = carModel.MelfunctionChance;
             _context.SaveChanges();
 
             return Ok(dbCar);
