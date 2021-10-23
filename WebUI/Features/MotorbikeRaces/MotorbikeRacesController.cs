@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Linq;
 using WebUI.Features.MotorbikeRaces.Models;
+using WebUI.Features.MotorbikeRaces.Services;
 
 namespace WebUI.Features.MotorbikeRaces
 {
@@ -17,6 +18,9 @@ namespace WebUI.Features.MotorbikeRaces
         {
             _context = context;
         }
+
+        public MotorbikeRaceService MotorbikeRaceService { get; set; } = new MotorbikeRaceService();
+
 
         [HttpGet]
         public ActionResult<List<MotorbikeRace>> GetMotorbikeRaces()
@@ -113,6 +117,7 @@ namespace WebUI.Features.MotorbikeRaces
             }
 
             dbMotorbikeRace.Status = "Started";
+            MotorbikeRaceService.RunRace(dbMotorbikeRace);
             _context.SaveChanges();
             return Ok(dbMotorbikeRace);
         }
