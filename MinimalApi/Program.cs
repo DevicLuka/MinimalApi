@@ -21,7 +21,8 @@ var summaries = new[]
     "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
 };
 
-// Cars endpoints
+
+#region Cars endpoints
 
 app.MapGet("api/cars", () =>
 {
@@ -40,7 +41,9 @@ app.MapGet("api/cars", () =>
     };
 
     return cars;
-}).WithName("GetCars");
+})
+    .WithName("GetCars")
+    .WithTags("Cars");
 
 app.MapGet("api/cars/{id}",
     (int id) =>
@@ -50,29 +53,98 @@ app.MapGet("api/cars/{id}",
             TeamName = "Team A"
         };
         return car1;
-    }).WithName("GetCar");
+    })
+    .WithName("GetCar")
+    .WithTags("Cars");
 
 app.MapPost("api/cars",
     (Car car) =>
     {
         return car;
-    }).WithName("CreateCar");
+    })
+    .WithName("CreateCar")
+    .WithTags("Cars");
 
 app.MapPut("api/cars/{id}",
     (Car car) =>
     {
         return car;
-    }).WithName("UpdateCar");
+    })
+    .WithName("UpdateCar")
+    .WithTags("Cars");
 
 app.MapDelete("api/cars/{id}",
     (int id) =>
     {
         return $"Car with id: {id} was succesfully deleted";
-    }).WithName("DeleteCar");
+    })
+    .WithName("DeleteCar")
+    .WithTags("Cars");
 
-// Motorbikes endpoints
+#endregion
 
-// Default endpoints
+#region Motorbikes endpoints
+
+app.MapGet("api/motorbikes", () =>
+{
+    var motorbike1 = new Motorbike
+    {
+        TeamName = "Team A"
+    };
+    var motorbike2 = new Motorbike
+    {
+        TeamName = "Team B"
+    };
+
+    var cars = new List<Motorbike>
+    {
+        motorbike1, motorbike2
+    };
+
+    return cars;
+})
+    .WithName("GetMotorbikes")
+    .WithTags("Motorbikes");
+
+app.MapGet("api/motorbikes/{id}",
+    (int id) =>
+    {
+        var motorbike1 = new Motorbike
+        {
+            TeamName = "Team A"
+        };
+        return motorbike1;
+    })
+    .WithName("GetMotorbike")
+    .WithTags("Motorbikes");
+
+app.MapPost("api/motorbikes",
+    (Motorbike motorbike) =>
+    {
+        return motorbike;
+    })
+    .WithName("CreateMotorbike")
+    .WithTags("Motorbikes");
+
+app.MapPut("api/motorbikes/{id}",
+    (Motorbike motorbike) =>
+    {
+        return motorbike;
+    })
+    .WithName("UpdateMotorbike")
+    .WithTags("Motorbikes");
+
+app.MapDelete("api/motorbikes/{id}",
+    (int id) =>
+    {
+        return $"Motorbike with id: {id} was succesfully deleted";
+    })
+    .WithName("DeleteMotorbike")
+    .WithTags("Motorbikes");
+
+#endregion
+
+#region Default endpoints
 
 app.MapGet("/weatherforecast", () =>
 {
@@ -86,11 +158,15 @@ app.MapGet("/weatherforecast", () =>
         .ToArray();
     return forecast;
 })
-.WithName("GetWeatherForecast");
+.WithName("GetWeatherForecast")
+.WithTags("Defaults"); ;
+
+#endregion
 
 app.Run();
 
 // Models
+#region Models
 
 internal record WeatherForecast(DateTime Date, int TemperatureC, string? Summary)
 {
@@ -108,3 +184,17 @@ public record Car
     public bool FinishedRace { get; set; }
     public int RacedForHours { get; set; }
 }
+
+public record Motorbike
+{
+    public int Id { get; set; }
+    public string TeamName { get; set; }
+    public int Speed { get; set; }
+    public double MelfunctionChance { get; set; }
+    public int MelfunctionsOccured { get; set; }
+    public int DistanceCoverdInMiles { get; set; }
+    public bool FinishedRace { get; set; }
+    public int RacedForHours { get; set; }
+}
+
+#endregion
