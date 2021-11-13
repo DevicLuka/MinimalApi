@@ -11,6 +11,5 @@ namespace Domain.Entities
         public int TimeLimit { get; set; }
         public string Status { get; set; }
         public List<Motorbike> Motorbikes { get; set; } = new List<Motorbike>();
-
     }
 }
