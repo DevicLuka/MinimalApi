@@ -260,7 +260,7 @@ app.MapPut("api/carraces/{id}/start",
 
         dbCarRace.Status = "Started";
         var finishedRace = RunCarRace(dbCarRace);
-        dbCarRace.Status = "Finished";
+        finishedRace.Status = "Finished";
         db.SaveChanges();
 
         return Results.Ok(finishedRace);
@@ -499,9 +499,11 @@ app.MapPut("api/motorbikeraces/{id}/start",
         }
 
         dbMotorbikeRace.Status = "Started";
+        var finishedRace = RunMotorbikeRace(dbMotorbikeRace);
+        finishedRace.Status = "Finished";
         db.SaveChanges();
 
-        return Results.Ok(dbMotorbikeRace);
+        return Results.Ok(finishedRace);
     })
     .WithName("StartMotorbikeRace")
     .WithTags("Motorbike races");
@@ -529,7 +531,8 @@ app.MapGet("/weatherforecast", () =>
 
 app.Run();
 
-// Methods
+
+#region Methods
 
 static CarRace RunCarRace(CarRace carRace)
 {
@@ -566,6 +569,42 @@ static CarRace RunCarRace(CarRace carRace)
     return carRace;
 }
 
+static MotorbikeRace RunMotorbikeRace(MotorbikeRace motorbikeRace)
+{
+    var racers = new List<Motorbike>();
+    foreach (var motorbike in motorbikeRace.Motorbikes)
+    {
+        while (motorbike.DistanceCoverdInMiles < motorbikeRace.Distance
+            && motorbike.RacedForHours < motorbikeRace.TimeLimit)
+        {
+            var random = new Random().Next(1, 101);
+            if (random <= motorbike.MelfunctionChance)
+            {
+                motorbike.MelfunctionsOccured++;
+            }
+            else
+            {
+                motorbike.DistanceCoverdInMiles += motorbike.Speed;
+            }
+            motorbike.RacedForHours++;
+        }
+
+        if (motorbike.DistanceCoverdInMiles >= motorbikeRace.Distance)
+        {
+            motorbike.FinishedRace = true;
+        }
+
+        racers.Add(motorbike);
+    }
+    motorbikeRace.Motorbikes = racers.OrderBy(x => x.FinishedRace)
+                         .ThenByDescending(x => x.DistanceCoverdInMiles)
+                         .ThenByDescending(x => x.RacedForHours)
+                         .ToList();
+
+    return motorbikeRace;
+}
+
+#endregion
 
 #region Models
 
@@ -652,8 +691,8 @@ public record MotorbikeRacesCreateModel
 
 #endregion
 
+#region Persistance
 
-// Persistance
 public class RaceDb : DbContext
 {
     public RaceDb(DbContextOptions<RaceDb> options) : base(options)
@@ -668,3 +707,5 @@ public class RaceDb : DbContext
 
     public DbSet<MotorbikeRace> MotorbikeRaces { get; set; }
 }
+
+#endregion
