@@ -119,6 +119,155 @@ app.MapDelete("api/cars/{id}",
 
 #endregion
 
+#region Car races endpoints
+
+// Get car races
+app.MapGet("api/carraces",
+    (RaceDb db) =>
+    {
+        var carRaces = db.CarRaces.Include(x => x.Cars).ToList();
+        return Results.Ok(carRaces);
+    })
+    .WithName("GetCarRaces")
+    .WithTags("Car races");
+
+// Get car race
+app.MapGet("api/carraces/{id}",
+    (int id, RaceDb db) =>
+    {
+        var carRace = db
+               .CarRaces
+               .Include(x => x.Cars)
+               .FirstOrDefault(x => x.Id == id);
+
+        if (carRace == null)
+        {
+            return Results.NotFound();
+        }
+
+        return Results.Ok(carRace);
+    })
+    .WithName("GetCarRace")
+    .WithTags("Car races");
+
+// Create car race
+app.MapPost("api/carraces/cars",
+    (CarRaceCreateModel carRaceModel, RaceDb db) =>
+    {
+        var newCarRace = new CarRace
+        {
+            Name = carRaceModel.Name,
+            Location = carRaceModel.Location,
+            Distance = carRaceModel.Distance,
+            TimeLimit = carRaceModel.TimeLimit,
+            Status = "Created"
+        };
+        db.CarRaces.Add(newCarRace);
+        db.SaveChanges();
+        return Results.Ok(newCarRace);
+    })
+    .WithName("CreateCarRace")
+    .WithTags("Car races");
+
+// Update car race
+app.MapPut("api/carraces/{id}",
+    ([FromQuery] int id, [FromBody] CarRaceCreateModel carRaceModel, RaceDb db) =>
+    {
+        var dbCarRace = db
+                .CarRaces
+                .Include(x => x.Cars)
+                .FirstOrDefault(x => x.Id == id);
+
+        if (dbCarRace == null)
+        {
+            return Results.NotFound($"CarRace with id: {id} isn't found.");
+        }
+
+        dbCarRace.Location = carRaceModel.Location;
+        dbCarRace.Name = carRaceModel.Name;
+        dbCarRace.TimeLimit = carRaceModel.TimeLimit;
+        dbCarRace.Distance = carRaceModel.Distance;
+        db.SaveChanges();
+
+        return Results.Ok(dbCarRace);
+    })
+    .WithName("UpdateCarRace")
+    .WithTags("Car races");
+
+// Delete car race
+app.MapDelete("api/carraces/{id}",
+    (int id, RaceDb db) =>
+    {
+        var dbCarRace = db
+                .CarRaces
+                .Include(x => x.Cars)
+                .FirstOrDefault(dbCarRace => dbCarRace.Id == id);
+
+        if (dbCarRace == null)
+        {
+            return Results.NotFound($"CarRace with id: {id} isn't found.");
+        }
+
+        db.Remove(dbCarRace);
+        db.SaveChanges();
+
+        return Results.Ok($"CarRace with id: {id} was successfuly deleted");
+    })
+    .WithName("DeleteCarRace")
+    .WithTags("Car races");
+
+// Add Car to car race
+app.MapPut("{carRaceId}/addcar/{carId}",
+    (int carRaceId, int carId, RaceDb db) =>
+    {
+        var dbCarRace = db
+                .CarRaces
+                .Include(x => x.Cars)
+                .SingleOrDefault(x => x.Id == carRaceId);
+
+        if (dbCarRace == null)
+        {
+            return Results.NotFound($"Car Race with id: {carRaceId} not found");
+        }
+
+        var dbCar = db.Cars.SingleOrDefault(x => x.Id == carId);
+
+        if (dbCar == null)
+        {
+            return Results.NotFound($"Car with id: {carId} not found");
+        }
+
+        dbCarRace.Cars.Add(dbCar);
+        db.SaveChanges();
+        return Results.Ok(dbCarRace);
+    })
+    .WithName("AddCarToCarRace")
+    .WithTags("Car races");
+
+// Start car race
+app.MapPut("{id}/start",
+    (int id, RaceDb db) =>
+    {
+        var dbCarRace = db
+                .CarRaces
+                .Include(x => x.Cars)
+                .FirstOrDefault(carRace => carRace.Id == id);
+
+        if (dbCarRace == null)
+        {
+            return Results.NotFound($"Car Race with id: {id} not found");
+        }
+
+        dbCarRace.Status = "Started";
+        db.SaveChanges();
+
+        return Results.Ok(dbCarRace);
+    })
+    .WithName("StartCarRace")
+    .WithTags("Car races");
+
+#endregion
+
 #region Motorbikes endpoints
 
 // Get Motorbikes
@@ -255,6 +404,25 @@ public record CarCreateModel
     public double MelfunctionChance { get; set; }
 }
 
+public record CarRace
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
+    public string Location { get; set; }
+    public int Distance { get; set; }
+    public int TimeLimit { get; set; }
+    public string Status { get; set; }
+    public List<Car> Cars { get; set; } = new List<Car>();
+}
+
+public record CarRaceCreateModel
+{
+    public string Name { get; set; }
+    public string Location { get; set; }
+    public int Distance { get; set; }
+    public int TimeLimit { get; set; }
+}
+
 public record Motorbike
 {
     public int Id { get; set; }
@@ -286,6 +454,8 @@ public class RaceDb : DbContext
     }
 
     public DbSet<Car> Cars { get; set; }
+
+    public DbSet<CarRace> CarRaces { get; set; }
 
     public DbSet<Motorbike> Motorbikes { get; set; }
 }
