@@ -259,9 +259,11 @@ app.MapPut("api/carraces/{id}/start",
         }
 
         dbCarRace.Status = "Started";
+        var finishedRace = RunCarRace(dbCarRace);
+        dbCarRace.Status = "Finished";
         db.SaveChanges();
 
-        return Results.Ok(dbCarRace);
+        return Results.Ok(finishedRace);
     })
     .WithName("StartCarRace")
     .WithTags("Car races");
@@ -527,6 +529,44 @@ app.MapGet("/weatherforecast", () =>
 
 app.Run();
 
+// Methods
+
+static CarRace RunCarRace(CarRace carRace)
+{
+    var racers = new List<Car>();
+    foreach (var car in carRace.Cars)
+    {
+        while (car.DistanceCoverdInMiles < carRace.Distance
+            && car.RacedForHours < carRace.TimeLimit)
+        {
+            var random = new Random().Next(1, 101);
+            if (random <= car.MelfunctionChance)
+            {
+                car.MelfunctionsOccured++;
+            }
+            else
+            {
+                car.DistanceCoverdInMiles += car.Speed;
+            }
+            car.RacedForHours++;
+        }
+
+        if (car.DistanceCoverdInMiles >= carRace.Distance)
+        {
+            car.FinishedRace = true;
+        }
+
+        racers.Add(car);
+    }
+    carRace.Cars = racers.OrderBy(x => x.FinishedRace)
+                         .ThenByDescending(x => x.DistanceCoverdInMiles)
+                         .ThenByDescending(x => x.RacedForHours)
+                         .ToList();
+
+    return carRace;
+}
+
+
 #region Models
 
 internal record WeatherForecast(DateTime Date, int TemperatureC, string? Summary)
@@ -614,7 +654,6 @@ public record MotorbikeRacesCreateModel
 
 
 // Persistance
-
 public class RaceDb : DbContext
 {
     public RaceDb(DbContextOptions<RaceDb> options) : base(options)
